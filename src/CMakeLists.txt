@@ -5,6 +5,7 @@ set(SOURCES PGData.cpp FillSparse.cpp
             FixedContactConstr.cpp StaticStabilityConstr.cpp
             PositiveForceConstr.cpp FrictionConeConstr.cpp
             PlanarSurfaceConstr.cpp CollisionConstr.cpp
+            TorqueConstr.cpp
             RobotLinkConstr.cpp CylindricalSurfaceConstr.cpp
             PostureGenerator.cpp CoMHalfSpaceConstr.cpp)
 set(HEADERS PGData.h FillSparse.h
@@ -12,7 +13,7 @@ set(HEADERS PGData.h FillSparse.h
             StdCostFunc.h
             FixedContactConstr.h StaticStabilityConstr.h
             PositiveForceConstr.h FrictionConeConstr.h
-            PlanarSurfaceConstr.h
+            PlanarSurfaceConstr.h TorqueConstr.h
             CollisionConstr.h
             RobotLinkConstr.h CylindricalSurfaceConstr.h
             IterationCallback.h JacobianPatcher.h
