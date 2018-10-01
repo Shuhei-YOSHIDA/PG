@@ -16,6 +16,10 @@
 #pragma once
 
 // include
+// roboptim
+//#include <roboptim/core/differentiable-function.hh>
+#include <roboptim/core/function.hh>
+
 // Eigen
 #include <unsupported/Eigen/Polynomials>
 
@@ -23,14 +27,12 @@
 #include "AutoDiffFunction.h"
 #include "PGData.h"
 
-// RBDyn
-#include <RBDyn/ID.h>
 
 namespace pg
 {
 
 template<typename Type>
-class TorqueConstr : public AutoDiffFunction<Type, Eigen::Dynamic>
+class TorqueConstr_autodiff : public AutoDiffFunction<Type, Eigen::Dynamic>
 {
 public:
   typedef AutoDiffFunction<Type, Eigen::Dynamic> parent_t;
@@ -39,30 +41,46 @@ public:
   typedef typename parent_t::argument_t argument_t;
 
 public:
-  TorqueConstr(PGData* pgdata)
+  TorqueConstr_autodiff(PGData* pgdata)
     : parent_t(pgdata, pgdata->pbSize(),
                pgdata->multibody().nrDof() - pgdata->multibody().joint(0).dof(),
-               "Torque")
+               "Torque_ad")
     , pgdata_(pgdata)
   {}
-  ~TorqueConstr()
+  ~TorqueConstr_autodiff()
   { }
 
 
   void impl_compute(result_ad_t& res, const argument_t& x) const
   {
-    pgdata_->x(x);
-    rbd::MultiBody mb(pgdata_->mb());
-    rbd::MultiBodyConfig mbc(pgdata_->mbc());
-    rbd::InverseDynamics id;
-    id.inverseDynamics(mb, mbc);
-    auto torque_vec = rbd::dofToVector(mb, mbc.jointTorque());
-    res = torque_vec.segment(mb.joint(0).dof(), torque_vec.size()); //remove virtual dof of root
-    /// @todo Limits of torque of root is set as -/+inf?
   }
 
 private:
   PGData* pgdata_;
+};
+
+class TorqueConstr : public roboptim::Function
+{
+public:
+  //typedef typename parent_t::argument_t argument_t;
+
+public:
+  TorqueConstr(PGData* pgdata);
+  ~TorqueConstr();
+
+
+  void impl_compute(result_ref res, const_argument_ref x) const;
+  //void impl_jacobian(jacobian_ref /* jac */, const_argument_ref /* x */) const;
+  //void impl_jacobian(jacobian_ref jac, const_argument_ref x) const;
+  //void impl_gradient(gradient_ref /* gradient */,
+  //    const_argument_ref /* x */, size_type /* functionId */) const
+  //{
+  //  throw std::runtime_error("NEVER GO HERE");
+  //}
+
+private:
+  PGData* pgdata_;
+
 };
 
 

@@ -21,6 +21,7 @@
 
 // PG
 #include "PGData.h"
+#include "EigenAutoDiffScalar.h"
 
 namespace pg
 {
@@ -30,9 +31,8 @@ template<typename Type, int Size>
 class AutoDiffFunction : public roboptim::DifferentiableFunction
 {
 public:
-  //typedef typename Type::scalar_t scalar_t;
-  //typedef Eigen::Matrix<scalar_t, Size, 1> result_ad_t;
-  typedef Eigen::Matrix<double, Size, 1> result_ad_t;
+  typedef typename Type::scalar_t scalar_t;
+  typedef Eigen::Matrix<scalar_t, Size, 1> result_ad_t;
 
 public:
   //AutoDiffFunction(PGData<Type>* pgdata, int pbSize, int size, const std::string& name)
@@ -42,15 +42,14 @@ public:
     , xStamp_(0)
     , res_(size)
   {
-    //res_.fill(scalar_t(0., Eigen::VectorXd::Zero(pbSize)));
-    res_.fill(double(0., Eigen::VectorXd::Zero(pbSize)));
+    res_.fill(scalar_t(0., Eigen::VectorXd::Zero(pbSize)));
   }
   ~AutoDiffFunction() throw()
   {}
 
-  virtual void impl_compute(result_ad_t& res, const argument_t& x) const = 0;
+  virtual void impl_compute(result_ad_t& res, const_argument_ref x) const = 0;
 
-  void impl_compute(result_t& res, const argument_t& x) const throw()
+  void impl_compute(result_ref res, const_argument_ref x) const
   {
     impl_compute_stamped(x);
 
@@ -62,7 +61,7 @@ public:
   }
 
 
-  void impl_jacobian(jacobian_t& jac, const argument_t& x) const throw()
+  void impl_jacobian(jacobian_ref jac, const_argument_ref x) const
   {
     impl_compute_stamped(x);
 
@@ -74,8 +73,8 @@ public:
   }
 
 
-  void impl_gradient(gradient_t& gradient,
-      const argument_t& x, size_type functionId) const throw()
+  void impl_gradient(gradient_ref gradient,
+      const_argument_ref x, size_type functionId) const
   {
     impl_compute_stamped(x);
 
@@ -83,7 +82,7 @@ public:
   }
 
 private:
-  void impl_compute_stamped(const argument_t& x) const
+  void impl_compute_stamped(const_argument_ref x) const
   {
     pgdata_->x(x);
     if(xStamp_ != pgdata_->xStamp())
@@ -94,7 +93,6 @@ private:
   }
 
 private:
-  //PGData<Type>* pgdata_;
   PGData* pgdata_;
   // yeah ! every thing have to be mutable since all impl_something are const.
   mutable std::size_t xStamp_;
