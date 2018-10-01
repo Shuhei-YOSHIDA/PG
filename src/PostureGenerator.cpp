@@ -32,7 +32,7 @@
 #include "StaticStabilityConstr.h"
 #include "PositiveForceConstr.h"
 #include "FrictionConeConstr.h"
-//#include "TorqueConstr.h"
+#include "TorqueConstr.h"
 #include "PlanarSurfaceConstr.h"
 //#include "EllipseContactConstr.h"
 #include "CollisionConstr.h"
@@ -440,11 +440,13 @@ bool PostureGenerator::run(const std::vector<RunConfig>& configs)
         problem.addConstraint(fcc, limCom, scalCom);
     }
 
-    /*
+    bool isTorque_ = true;
+    if (robotConfig.tl.size() == 0 && robotConfig.tlPoly.size() == 0) isTorque_ = false;
+
     if(isTorque_)
     {
       // if polynome constraint not set we use the static torque constraint
-      if(tlPoly_.size() == 0)
+      if(robotConfig.tlPoly.size() == 0)
       {
         std::vector<std::vector<double>> tl = robotConfig.tl;
         std::vector<std::vector<double>> tu = robotConfig.tu;
@@ -466,27 +468,27 @@ bool PostureGenerator::run(const std::vector<RunConfig>& configs)
       }
       else
       {
-        std::vector<std::vector<Eigen::VectorXd>> tl = robotConfig.tlPoly;
-        std::vector<std::vector<Eigen::VectorXd>> tu = robotConfig.tuPoly;
-        tl[0] = {};
-        tu[0] = {};
+        //std::vector<std::vector<Eigen::VectorXd>> tl = robotConfig.tlPoly;
+        //std::vector<std::vector<Eigen::VectorXd>> tu = robotConfig.tuPoly;
+        //tl[0] = {};
+        //tu[0] = {};
 
-        boost::shared_ptr<TorquePolyBoundsConstr> torque(
-            new TorquePolyBoundsConstr(&pgdata, tl, tu));
-        typename TorquePolyBoundsConstr::intervals_t limTorque(torque->outputSize());
-        for(std::size_t i = 0; i < limTorque.size()/2; ++i)
-        {
-          // 0 <= torque(q, f) - torqueMin(q)
-          limTorque[i] = {0., std::numeric_limits<double>::infinity()};
-          // torque(q, f) - torqueMax(q) <= 0
-          limTorque[i + limTorque.size()/2] = {-std::numeric_limits<double>::infinity(), 0.};
-        }
+        //boost::shared_ptr<TorquePolyBoundsConstr> torque(
+        //    new TorquePolyBoundsConstr(&pgdata, tl, tu));
+        //typename TorquePolyBoundsConstr::intervals_t limTorque(torque->outputSize());
+        //for(std::size_t i = 0; i < limTorque.size()/2; ++i)
+        //{
+        //  // 0 <= torque(q, f) - torqueMin(q)
+        //  limTorque[i] = {0., std::numeric_limits<double>::infinity()};
+        //  // torque(q, f) - torqueMax(q) <= 0
+        //  limTorque[i + limTorque.size()/2] = {-std::numeric_limits<double>::infinity(), 0.};
+        //}
 
-        typename solver_t::problem_t::scales_t scalTorque(torque->outputSize(), 1.);
-        problem.addConstraint(torque, limTorque, scalTorque);
+        //typename solver_t::problem_t::scales_t scalTorque(torque->outputSize(), 1.);
+        //problem.addConstraint(torque, limTorque, scalTorque);
+        std::cerr << "TorquePolyBoundsConstr is not implemented" << std::endl;
       }
     }
-    */
 
     // force PGData to make an update
     // this avoid that a first call with a x identical to PGData::{xq_,xf_}

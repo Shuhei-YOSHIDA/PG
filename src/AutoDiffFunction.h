@@ -21,7 +21,6 @@
 
 // PG
 #include "PGData.h"
-#include "EigenAutoDiffScalar.h"
 
 namespace pg
 {
@@ -35,7 +34,6 @@ public:
   typedef Eigen::Matrix<scalar_t, Size, 1> result_ad_t;
 
 public:
-  //AutoDiffFunction(PGData<Type>* pgdata, int pbSize, int size, const std::string& name)
   AutoDiffFunction(PGData* pgdata, int pbSize, int size, const std::string& name)
     : roboptim::DifferentiableFunction(pbSize, size, name)
     , pgdata_(pgdata)

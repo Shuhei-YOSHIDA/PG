@@ -59,7 +59,7 @@ private:
   PGData* pgdata_;
 };
 
-class TorqueConstr : public roboptim::Function
+class TorqueConstr : public roboptim::SparseFunction
 {
 public:
   //typedef typename parent_t::argument_t argument_t;

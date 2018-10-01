@@ -28,7 +28,7 @@ namespace pg
 {
 
 TorqueConstr::TorqueConstr(PGData* pgdata)
-    : roboptim::Function(pgdata->pbSize(),
+    : roboptim::SparseFunction(pgdata->pbSize(),
                          pgdata->multibody().nrDof() - pgdata->multibody().joint(0).dof(),
                          "Torque")
     , pgdata_(pgdata)
