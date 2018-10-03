@@ -17,6 +17,8 @@
 //#include "AutoDiffFunction.h"
 
 // RBDyn
+#include <RBDyn/FK.h>
+#include <RBDyn/FV.h>
 #include <RBDyn/ID.h>
 
 std::string testCode()
@@ -33,7 +35,6 @@ TorqueConstr::TorqueConstr(PGData* pgdata)
                          "Torque")
     , pgdata_(pgdata)
 {
-
 }
 
 TorqueConstr::~TorqueConstr()
@@ -44,22 +45,23 @@ void TorqueConstr::impl_compute(result_ref res, const_argument_ref x) const
   pgdata_->x(x);
   rbd::MultiBody mb(pgdata_->mb());
   rbd::MultiBodyConfig mbc(pgdata_->mbc());
-  rbd::InverseDynamics id;
+  mbc.gravity = pgdata_->gravity();
+  rbd::forwardVelocity(mb, mbc);
+  // Input force computed by the pg
+  for(const PGData::ForceData& fd: pgdata_->forceDatas())
+  {
+    int index = mb.bodyIndexByName(fd.bodyName);
+    for(int pi = 0; pi < fd.points.size(); pi++)
+    {
+      mbc.force[index] = mbc.force[index] +
+          mbc.bodyPosW[index].transMul(fd.points[pi].transMul(fd.forces[pi]));
+    }
+  }
+  rbd::InverseDynamics id(mb);
   id.inverseDynamics(mb, mbc);
   Eigen::VectorXd torque_vec = rbd::dofToVector(mb, mbc.jointTorque);
   res = torque_vec.segment(mb.joint(0).dof(), torque_vec.size());
 
-  //long unsigned int pos = 0;
-  //for (unsigned int i = 1; i < mbc.jointTorque.size(); i++)
-  //{
-  //  auto torque_i = mbc.jointTorque[i];
-  //  auto size = torque_i.size();
-  //  result_ad_t res_i(size);
-  //  for (unsigned int j = 0; j < size; j++) res_i[j] = torque_i[j];
-  //  res.segment(pos, size) = res_i;
-  //  pos+=size;
-  //}
-  // @todo Limits of torque of root is set as -/+inf?
 }
 
 } // namespace pg
